@@ -48,7 +48,19 @@
 # Returns:  address of symbol if found or -1 if not found
 #------------------------------------------------------------------------------
 addr_for_symbol:
+	addiu $sp, $sp, -12		# Begin addr_for_symbol
+	sw $s0, 8($sp)
+	sw $a1, 4($sp)
+	sw $ra, 0($sp)
 	# YOUR CODE HERE
+
+addr_not_found:
+	li $v0, -1
+addr_exit:
+	lw $s0, 8($sp)
+	lw $a1, 4($sp)
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 12
 	jr $ra
 	
 ###############################################################################
