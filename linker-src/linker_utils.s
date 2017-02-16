@@ -47,6 +47,9 @@ relocLabel: .asciiz ".relocation"
 #------------------------------------------------------------------------------
 inst_needs_relocation:
 	# YOUR CODE HERE
+
+inst_needs_relocation_true:
+	li $v0, 1
 	jr $ra
 	
 #------------------------------------------------------------------------------
@@ -68,7 +71,22 @@ inst_needs_relocation:
 # Returns: the relocated instruction, or -1 if error
 #------------------------------------------------------------------------------
 relocate_inst:
+	addiu $sp, $sp, -16
+	sw $a0, 12($sp)
+	sw $a1, 8($sp)
+	sw $a2, 4($sp)
+	sw $ra, 0($sp)
+
+	move $a0, $a3	# $a1 is already set
+	jal symbol_for_addr				# checks relocation table
+	beq $v0, $0, relocate_inst_error
 	# YOUR CODE HERE
+
+relocate_inst_error:
+	li $v0, -1
+relocate_inst_end:
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 16
 	jr $ra
 
 ###############################################################################
