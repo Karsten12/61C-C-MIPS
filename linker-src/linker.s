@@ -46,8 +46,10 @@ hex_buffer:		.space 10
 # Returns: 0 on success and -1 on fail. 
 #------------------------------------------------------------------------------
 write_machine_code:
-	# You may need to save additional items onto the stack. Feel free to
-	# change this part.
+  ######################################################################
+	# You may need to save additional items onto the stack. Feel free to #
+	# change this part.                                                  #
+  ######################################################################
 	addiu $sp, $sp, -24
 	sw $s0, 20($sp)
 	sw $s1, 16($sp)
@@ -125,7 +127,9 @@ write_machine_code_done:
 write_machine_code_error:
 	li $v0, -1
 write_machine_code_end:
-	# Don't forget to change this part if you saved more items onto the stack!
+  ############################################################################
+	# Don't forget to change this part if you saved more items onto the stack! #
+  ############################################################################
 	lw $s0, 20($sp)
 	lw $s1, 16($sp)
 	lw $s2, 12($sp)
