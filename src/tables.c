@@ -25,11 +25,11 @@ void addr_alignment_incorrect() {
     write_to_log("Error: address is not a multiple of 4.\n");
 }
 
-void name_already_exists(const char* name) {
+void name_already_exists(const char *name) {
     write_to_log("Error: name '%s' already exists in table.\n", name);
 }
 
-void write_symbol(FILE* output, uint32_t addr, const char* name) {
+void write_symbol(FILE *output, uint32_t addr, const char *name) {
     fprintf(output, "%u\t%s\n", addr, name);
 }
 
@@ -37,14 +37,14 @@ void write_symbol(FILE* output, uint32_t addr, const char* name) {
  * Symbol Table Functions
  *******************************/
 
-/* Creates a new SymbolTable containg 0 elements and returns a pointer to that
+/* Creates a new SymbolTable containing 0 elements and returns a pointer to that
    table. Multiple SymbolTables may exist at the same time.
    If memory allocation fails, you should call allocation_failed().
    Mode will be either SYMTBL_NON_UNIQUE or SYMTBL_UNIQUE_NAME. You will need
    to store this value for use during add_to_table().
  */
-SymbolTable* create_table(int mode) {
-    SymbolTable* table = (SymbolTable*) malloc(sizeof(SymbolTable));
+SymbolTable *create_table(int mode) {
+    SymbolTable *table = (SymbolTable *) malloc(sizeof(SymbolTable));
     if (!table) {
         allocation_failed();
     }
@@ -59,16 +59,21 @@ SymbolTable* create_table(int mode) {
 }
 
 /* Frees the given SymbolTable and all associated memory. */
-void free_table(SymbolTable* table) {
+void free_table(SymbolTable *table) {
     /* YOUR CODE HERE */
+    for (int i = 0; i < table->len; i++) {
+        free(table->tbl[i].name);
+    }
+    free(table->tbl);
+    free(table);
 }
 
 /* A suggested helper function for copying the contents of a string. */
-static char* create_copy_of_str(const char* str) {
+static char *create_copy_of_str(const char *str) {
     size_t len = strlen(str) + 1;
     char *buf = (char *) malloc(len);
     if (!buf) {
-       allocation_failed();
+        allocation_failed();
     }
     strncpy(buf, str, len);
     return buf;
@@ -90,15 +95,34 @@ static char* create_copy_of_str(const char* str) {
 
    Hint: The functions get_addr_for_symbol() and create_copy_of_str() may be useful.
  */
-int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
+int add_to_table(SymbolTable *table, const char *name, uint32_t addr) {
     /* YOUR CODE HERE */
+
+    if (addr % 4 != 0) {
+        addr_alignment_incorrect();
+    }
+
+    char str = (char) create_copy_of_str(name);
+    if (table->mode == SYMTBL_UNIQUE_NAME) {
+        if (get_addr_for_symbol(table, name) != -1) {
+            name_already_exists(name);
+            return -1;
+        }
+    }
+    table->len++;
+    table->tbl = (Symbol *) realloc(table->tbl, table->len * sizeof(Symbol));
+    if (table->tbl == NULL) {
+        allocation_failed();
+    }
+    table->tbl[table->len - 1].name = create_copy_of_str(name);
+    table->tbl[table->len - 1].addr = addr;
     return 0;
 }
 
 /* Returns the address (byte offset) of the given symbol. If a symbol with name
    NAME is not present in TABLE, return -1.
  */
-int64_t get_addr_for_symbol(SymbolTable* table, const char* name) {
+int64_t get_addr_for_symbol(SymbolTable *table, const char *name) {
     for (int i = 0; i < table->len; i++) {
         if (strcmp(name, (table->tbl)[i].name) == 0) {
             return (table->tbl)[i].addr;
@@ -110,7 +134,7 @@ int64_t get_addr_for_symbol(SymbolTable* table, const char* name) {
 /* Writes the SymbolTable TABLE to OUTPUT. You should use write_symbol() to
    perform the write. Do not print any additional whitespace or characters.
  */
-void write_table(SymbolTable* table, FILE* output) {
+void write_table(SymbolTable *table, FILE *output) {
     for (int i = 0; i < table->len; i++) {
         write_symbol(output, (table->tbl)[i].addr, (table->tbl)[i].name);
     }

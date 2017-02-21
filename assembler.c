@@ -152,14 +152,26 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
 
         // Scan for the instruction name. If no name is found, then
         // move to the next line.
-	char *token = strtok(buf, IGNORE_CHARS);
+	    char *token = strtok(buf, IGNORE_CHARS);
+        if (token == NULL) {
+            continue;
+        }
 
         // Handle Labels. If a label is found, get the next token.
+        int label_int = add_if_label(0, token, byte_offset, symtbl);
+        if (label_int == 0) {
+            // just write instruction
+        } else if(label_int == 1) {
+            token = strtok(NULL, IGNORE_CHARS);
+        } else{
+            ret_code = -1;
+        }
 
         // Scan for arguments. On error, continue to the next line.
         char* args[MAX_ARGS];
         int num_args = 0;
-	
+        parse_args(input_line, args, num_args);
+
 
     	// Checks to see if there were any errors when writing instructions
         unsigned int lines_written = write_pass_one(output, token, args, num_args);
@@ -197,18 +209,31 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
 
         /* Next, use strtok() to scan for next character.*/
         char* name = strtok(buf, IGNORE_CHARS);
-
-        // Check to see if name if a name was found. If not, move to the next line
-
+        // Check to see if a name was found. If not, move to the next line
+        if (name == NULL) {
+            continue;
+        }
         /* Parse for instruction arguments. You should use strtok() to tokenize
            the rest of the line. Extra arguments should be filtered out in pass_one(),
            so you don't need to worry about that here. */
         char* args[MAX_ARGS];
         int num_args = 0;
+        // SOURCE: https://www.tutorialspoint.com/c_standard_library/c_function_strtok.htm
+        while (name != NULL) {
+            args[num_args] = name;
+            name = strtok(NULL, IGNORE_CHARS);
+        }
 
         /* Use translate_inst() to translate the instruction and write to output file.
            If an error occurs, the instruction will not be written and you should call
            raise_inst_error(). If there is no error, then make sure to increment the byte offset  */
+
+        if (translate_inst(output, name, args, num_args, byte_offset, symtbl, reltbl) == 1) {
+            byte_offset += 4;
+        } else{
+            ret_code = -1;
+            raise_inst_error(input_line, name, args, num_args);
+        }
     }
     /* Repeat until no more characters are left */
 

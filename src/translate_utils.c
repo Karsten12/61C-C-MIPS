@@ -5,7 +5,7 @@
 
 #include "translate_utils.h"
 
-void write_inst_string(FILE* output, const char* name, char** args, int num_args) {
+void write_inst_string(FILE *output, const char *name, char **args, int num_args) {
     fprintf(output, "%s", name);
     for (int i = 0; i < num_args; i++) {
         fprintf(output, " %s", args[i]);
@@ -17,7 +17,7 @@ void write_inst_hex(FILE *output, uint32_t instruction) {
     fprintf(output, "%08x\n", instruction);
 }
 
-int is_valid_label(const char* str) {
+int is_valid_label(const char *str) {
     if (!str) {
         return 0;
     }
@@ -53,9 +53,19 @@ int is_valid_label(const char* str) {
    function returns 0 if the conversion proceeded without errors, or -1 if an 
    error occurred. If an error occurs, do not set the value that OUTPUT points to.
  */
-int translate_num(long int* output, const char* str, long int lower_bound, long int upper_bound) { 
+int translate_num(long int *output, const char *str, long int lower_bound, long int upper_bound) {
     /* YOUR CODE HERE */
-    return 0;
+
+    char *ptr;
+    if (strcmp(str, "0") != 0 && strtol(str, NULL, 0) == 0 && strcmp(str, "0x0") != 0) {
+        printf("Something failed");
+        return -1;
+    }
+    *output = strtol(str, &ptr, 0);
+    if (*ptr == 0 && lower_bound <= *output && *output <= upper_bound) {
+        return 0;
+    }
+    return -1;
 }
 
 /* Translates the register name to the corresponding register number. Please
@@ -63,24 +73,24 @@ int translate_num(long int* output, const char* str, long int lower_bound, long 
 
    Returns the register number of STR or -1 if the register name is invalid.
  */
-int translate_reg(const char* str) {
-    if (strcmp(str, "$zero") == 0)      return 0;
-    else if (strcmp(str, "$0") == 0)    return 0;
-    else if (strcmp(str, "$at") == 0)   return 1;
-    else if (strcmp(str, "$v0") == 0)   return 2;
-    else if (strcmp(str, "$a0") == 0)   return 4;
-    else if (strcmp(str, "$a1") == 0)	return 5;
-    else if (strcmp(str, "$a2") == 0)	return 6;
-    else if (strcmp(str, "$a3") == 0)	return 7;
-    else if (strcmp(str, "$t0") == 0)	return 8;
-    else if (strcmp(str, "$t1") == 0)	return 9;
-    else if (strcmp(str, "$t2") == 0)	return 10;
-    else if (strcmp(str, "$t3") == 0)	return 11;
-    else if (strcmp(str, "$s0") == 0)	return 16; 
-    else if (strcmp(str, "$s1") == 0)	return 17;  
-    else if (strcmp(str, "$s2") == 0)	return 18;    
-    else if (strcmp(str, "$s3") == 0)	return 19;
-    else if (strcmp(str, "$sp") == 0)	return 29;
-    else if (strcmp(str, "$ra") == 0)	return 31; 
-    else                                return -1;
+int translate_reg(const char *str) {
+    if (strcmp(str, "$zero") == 0) return 0;
+    else if (strcmp(str, "$0") == 0) return 0;
+    else if (strcmp(str, "$at") == 0) return 1;
+    else if (strcmp(str, "$v0") == 0) return 2;
+    else if (strcmp(str, "$a0") == 0) return 4;
+    else if (strcmp(str, "$a1") == 0) return 5;
+    else if (strcmp(str, "$a2") == 0) return 6;
+    else if (strcmp(str, "$a3") == 0) return 7;
+    else if (strcmp(str, "$t0") == 0) return 8;
+    else if (strcmp(str, "$t1") == 0) return 9;
+    else if (strcmp(str, "$t2") == 0) return 10;
+    else if (strcmp(str, "$t3") == 0) return 11;
+    else if (strcmp(str, "$s0") == 0) return 16;
+    else if (strcmp(str, "$s1") == 0) return 17;
+    else if (strcmp(str, "$s2") == 0) return 18;
+    else if (strcmp(str, "$s3") == 0) return 19;
+    else if (strcmp(str, "$sp") == 0) return 29;
+    else if (strcmp(str, "$ra") == 0) return 31;
+    else return -1;
 }
