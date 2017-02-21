@@ -57,7 +57,7 @@ int translate_num(long int *output, const char *str, long int lower_bound, long 
     /* YOUR CODE HERE */
 
     char *ptr;
-    if (strcmp(str, "0") != 0 && strtol(str, NULL, 0) == 0 && strcmp(str, "0x0") != 0) {
+    if (strcmp(str, "0") != 0 && strtol(str, NULL, 0) == 0) {
         printf("Something failed");
         return -1;
     }

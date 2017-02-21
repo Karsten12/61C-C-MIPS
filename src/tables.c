@@ -100,6 +100,7 @@ int add_to_table(SymbolTable *table, const char *name, uint32_t addr) {
 
     if (addr % 4 != 0) {
         addr_alignment_incorrect();
+        return -1;
     }
 
     //char str = (char) create_copy_of_str(name);

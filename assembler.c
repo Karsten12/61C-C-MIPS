@@ -141,12 +141,10 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
     char buf[BUF_SIZE];
     uint32_t input_line = 0, byte_offset = 0;
     int ret_code = 0;
-
-
      // Read lines and add to instructions
     while(fgets(buf, BUF_SIZE, input)) {
         input_line++;
-
+        fprintf(stderr, "HI");
         // Ignore comments
         skip_comment(buf);
 
@@ -154,6 +152,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
         // move to the next line.
 	    char *token = strtok(buf, IGNORE_CHARS);
         if (token == NULL) {
+            fprintf(stderr, token);
             continue;
         }
 
@@ -165,6 +164,10 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
             token = strtok(NULL, IGNORE_CHARS);
         } else{
             ret_code = -1;
+        }
+        if (token == NULL) {
+            fprintf(stderr, token);
+            continue;
         }
 
         // Scan for arguments. On error, continue to the next line.
