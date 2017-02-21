@@ -102,7 +102,7 @@ int add_to_table(SymbolTable *table, const char *name, uint32_t addr) {
         addr_alignment_incorrect();
     }
 
-    char str = (char) create_copy_of_str(name);
+    //char str = (char) create_copy_of_str(name);
     if (table->mode == SYMTBL_UNIQUE_NAME) {
         if (get_addr_for_symbol(table, name) != -1) {
             name_already_exists(name);
