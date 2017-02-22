@@ -153,10 +153,6 @@ int pass_one(FILE *input, FILE *output, SymbolTable *symtbl) {
         if (token == NULL) {
             continue;
         }
-        if (strcmp(token, "label") == 0) {
-            printf(token);
-        }
-
         // Handle Labels. If a label is found, get the next token.
         int label_int = add_if_label(input_line, token, byte_offset, symtbl);
         if (label_int == 1) {
