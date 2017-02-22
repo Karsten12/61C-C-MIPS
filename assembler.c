@@ -153,22 +153,26 @@ int pass_one(FILE *input, FILE *output, SymbolTable *symtbl) {
         if (token == NULL) {
             continue;
         }
+        if (strcmp(token, "label") == 0) {
+            printf(token);
+        }
 
         // Handle Labels. If a label is found, get the next token.
         int label_int = add_if_label(input_line, token, byte_offset, symtbl);
         if (label_int == 1) {
             token = strtok(NULL, IGNORE_CHARS);
-            if (token == NULL) {
-                continue;
-            }
-        } else {
+        } else if (label_int == -1){
             ret_code = -1;
+            continue;
+        }
+        if (token == NULL) {
+            continue;
         }
         // Scan for arguments. On error, continue to the next line.
         char *args[MAX_ARGS];
         int num_args = 0;
         int parse_int = parse_args(input_line, args, &num_args);
-        if (parse_int == -1) {
+        if (parse_int == 0) {
             // Checks to see if there were any errors when writing instructions
             unsigned int lines_written = write_pass_one(output, token, args, num_args);
             if (lines_written == 0) {
@@ -219,6 +223,7 @@ int pass_two(FILE *input, FILE *output, SymbolTable *symtbl, SymbolTable *reltbl
         while (name != NULL) {
             args[num_args] = name;
             name = strtok(NULL, IGNORE_CHARS);
+            num_args++;
         }
 
         /* Use translate_inst() to translate the instruction and write to output file.

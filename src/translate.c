@@ -39,11 +39,11 @@ const int TWO_POW_SEVENTEEN = 131072;    // 2^17
    Returns the number of instructions written (so 0 if there were any errors).
  */
 unsigned write_pass_one(FILE *output, const char *name, char **args, int num_args) {
-    if (num_args != 3) {
-        return 0;
-    }
     if (strcmp(name, "li") == 0) {
         /* YOUR CODE HERE */
+        if (num_args != 2) {
+            return 0;
+        }
         long int *idk = NULL;
         if (translate_num(idk, args[1], -2147483648, 2147483647) == -1) {
             return 0;
@@ -59,15 +59,24 @@ unsigned write_pass_one(FILE *output, const char *name, char **args, int num_arg
 
     } else if (strcmp(name, "pi") == 0) {
         /* YOUR CODE HERE */
+        if (num_args != 3) {
+            return 0;
+        }
         fprintf(output, "addiu %s $zero 3", args[0]);
         fprintf(output, "addiu %s $zero 1", args[1]);
         fprintf(output, "addiu %s $zero 4", args[2]);
         return 3;
     } else if (strcmp(name, "neg") == 0) {
+        if (num_args != 2) {
+            return 0;
+        }
         fprintf(output, "sub %s $0 %s", args[0], args[1]);
         return 1;
         /* YOUR CODE HERE */
     } else if (strcmp(name, "mfhilo") == 0) {
+        if (num_args != 2) {
+            return 0;
+        }
         /* YOUR CODE HERE */
         fprintf(output, "mfhi %s", args[0]);
         fprintf(output, "mflo %s", args[1]);
