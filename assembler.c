@@ -156,34 +156,27 @@ int pass_one(FILE *input, FILE *output, SymbolTable *symtbl) {
 
         // Handle Labels. If a label is found, get the next token.
         int label_int = add_if_label(input_line, token, byte_offset, symtbl);
-        if (label_int == 0) {
-            // just write instruction
-        } else if (label_int == 1) {
+        if (label_int == 1) {
             token = strtok(NULL, IGNORE_CHARS);
+            if (token == NULL) {
+                continue;
+            }
         } else {
             ret_code = -1;
         }
-        if (token == NULL) {
-            continue;
-        }
-
         // Scan for arguments. On error, continue to the next line.
         char *args[MAX_ARGS];
         int num_args = 0;
-        if (add_if_label(input_line, token, byte_offset, symtbl) == 1) {
-            ret_code = -1;
-            continue;
+        int parse_int = parse_args(input_line, args, &num_args);
+        if (parse_int == -1) {
+            // Checks to see if there were any errors when writing instructions
+            unsigned int lines_written = write_pass_one(output, token, args, num_args);
+            if (lines_written == 0) {
+                raise_inst_error(input_line, token, args, num_args);
+                ret_code = -1;
+            }
+            byte_offset += lines_written * 4;
         }
-        parse_args(input_line, args, (int *) num_args);
-
-
-        // Checks to see if there were any errors when writing instructions
-        unsigned int lines_written = write_pass_one(output, token, args, num_args);
-        if (lines_written == 0) {
-            raise_inst_error(input_line, token, args, num_args);
-            ret_code = -1;
-        }
-        byte_offset += lines_written * 4;
     }
     return ret_code;
 }
