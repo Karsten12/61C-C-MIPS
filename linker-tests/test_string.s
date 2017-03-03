@@ -25,8 +25,8 @@ test_str4:		.asciiz ""
 main:
 	print_str(test_header_name)
 	
-	#print_newline()
-	#jal test_streq
+	print_newline()
+	jal test_streq
 
 	print_newline()
 	jal test_strlen
@@ -43,7 +43,7 @@ main:
 #-------------------------------------------
 # Tests streq()
 #-------------------------------------------
-test_streq:
+ test_streq:
 	addiu $sp, $sp, -4
 	sw $ra, 0($sp)
 	print_str(test_streq_name)

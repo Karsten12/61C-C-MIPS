@@ -50,7 +50,9 @@ write_machine_code:
 	# You may need to save additional items onto the stack. Feel free to #
 	# change this part.                                                  #
   ######################################################################
-	addiu $sp, $sp, -24
+	addiu $sp, $sp, -32
+	sw $s6, 28($sp) # store instruction
+	sw $s5, 24($sp) # byte offset
 	sw $s0, 20($sp)
 	sw $s1, 16($sp)
 	sw $s2, 12($sp)
@@ -79,11 +81,13 @@ write_machine_code_find_text:
 	# 1. Initialize the byte offset to zero. We will need this for any instructions
 	# that require relocation:
 	# YOUR_INSTRUCTIONS_HERE
-
+	move $s5, $0 # can't be temp register b/c not saved in between subsequent function calls
 write_machine_code_next_inst:
 	# 2. Call readline() while passing in the correct arguments:
 	# YOUR_INSTRUCTIONS_HERE
-
+	# readline needs a0 to be file handle (perhaps the input file ptr)
+	move $a0, $s1
+	jal readline
 	# Check whether readline() returned an error.
 	blt $v0, $0, write_machine_code_error
 	# Store whether end-of-file was reached into $s4. We will check this later.
@@ -95,21 +99,49 @@ write_machine_code_next_inst:
 	# 3. Looks like there is another instruction. Call parse_int() with base=16
 	# to convert the instruction into a number, and store it into a register:
 	# YOUR_INSTRUCTIONS_HERE
+	# parse_int needs a0 to be the number, and a1 to be the base 
+	move $a0, $v1
+	addiu $a1, $0, 16
+	jal parse_int
+	# v0 now contains the number (instruction)
 	
 	# 4. Check if the instruction needs relocation. If it does not, branch to
 	# the label write_machine_code_to_file:
 	# YOUR_INSTRUCTIONS_HERE
+	# inst_needs_relocation needs a0 to be the 32 bit instruction
+	move $s6, $v0
+	move $a0, $v0
+	jal inst_needs_relocation
+	# v0 contains 1 if instruction needs relocation or 0 if it doesn't
+	beq $v0, $0, write_machine_code_to_file # if branch, then doesn't need relocation
 	
 	# 5. Here we handle relocation. Call relocate_inst() with the appropriate
 	# arguments, and store the relocated instruction in the appropriate register:
 	# YOUR_INSTRUCTIONS_HERE
-
+	# relocate inst requires a0 to be instruction to relocate, a1 the byte offset, a2 the symbol table, a3 the relocation table
+	move $a0, $s6
+	move $a1, $s5
+	move $a2, $s2
+	move $a3, $s3
+	jal relocate_inst
+	# v0 now contains the relocated instruction, or -1 if error
+	li $t0, -1
+	beq $v0, $t0, write_machine_code_error
+	# if relocated instruction, store the relocated instruction in the appropriate register
+	move $s6, $v0
+	
 write_machine_code_to_file:
 	# 6. Write the instruction into a string buffer via hex_to_str():
 	# YOUR_INSTRUCTIONS_HERE 
+	# hex_to_str needs a0 to be the int to write, and a1 to be the char buffer to write into
+	move $a0, $s6
+	la $a1, hex_buffer # I assume this is right since it is also done below
+	jal hex_to_str
+	# returns nothing
 	
 	# 7. Increment the byte offset by the appropriate amount:
 	# YOUR_INSTRUCTIONS_HERE
+	addi $s5, $s5, 4
 
 	# Here, we use the write to file syscall. WE specify the output file as $a0.
 	move $a0, $s0
@@ -125,18 +157,20 @@ write_machine_code_done:
 	li $v0, 0
 	j write_machine_code_end
 write_machine_code_error:
-	li $v0, -1
+	li $v0, -1 # WRITE ERRROR
 write_machine_code_end:
   ############################################################################
 	# Don't forget to change this part if you saved more items onto the stack! #
   ############################################################################
+  	lw $s6, 28($sp)
+  	lw $s5, 24($sp)
 	lw $s0, 20($sp)
 	lw $s1, 16($sp)
 	lw $s2, 12($sp)
 	lw $s3, 8($sp)
 	lw $s4, 4($sp)
 	lw $ra, 0($sp)
-	addiu $sp, $sp, 24
+	addiu $sp, $sp, 32
 	jr $ra
 
 ###############################################################################

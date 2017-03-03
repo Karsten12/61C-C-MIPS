@@ -31,6 +31,11 @@ strlen:
 	li $v0, 0
 strlen_loop:
 	# YOUR CODE HERE
+	lb $t1, 0($a0)
+	beq $t1, $0, strlen_ret
+	addi $a0, $a0, 1
+	addi $v0, $v0, 1
+	j strlen_loop
 strlen_ret:
 	jr $ra
 
@@ -48,9 +53,15 @@ strncpy:
 	li $t0, 0			# Begin strncpy()
 strncpy_start:
 	beq $t0, $a2, strncpy_end
-	addu $t1, $a1, $t0
+	addu $t1, $a1, $t0 # change pointer to point to new address
 	addu $t2, $a0, $t0
 	# YOUR CODE HERE
+	lb $t1, 0($t1)
+	sb $t1, 0($t2)
+	addi $t0, $t0, 1
+	j strncpy_start
+strncpy_end:
+	move $v0, $a0
 	jr $ra
 
 #------------------------------------------------------------------------------
@@ -70,7 +81,15 @@ copy_of_str:
 	sw $s0, 4($sp)
 	sw $ra, 0($sp)
 	# YOUR CODE HERE
-
+	move $s0, $a0 # string now in s0
+	jal strlen
+	addi $a0, $v0, 1 # a0 contains the length of the string
+	addi $v0, $0, 9 # v0 contains the address of the allocated space
+	syscall 
+	move $a2, $a0 # a2 contains the number of characters to copy
+	move $a0, $v0 # a0 now contains pointer to destination address
+	move $a1, $s0 # a1 the string to copy
+	jal strncpy
 	lw $s0, 4($sp)
 	lw $ra, 0($sp)
 	addiu $sp, $sp, 8

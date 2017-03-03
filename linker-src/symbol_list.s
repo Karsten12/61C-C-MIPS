@@ -53,9 +53,24 @@ addr_for_symbol:
 	sw $a1, 4($sp)
 	sw $ra, 0($sp)
 	# YOUR CODE HERE
-
+	move $s0, $a0 # need to use saved register
+addr_for:
+	beq $s0, $0, addr_not_found
+	lw $a0, 4($s0) # name to compare
+	lw $a1, 4($sp) # name to look for
+	jal streq
+	# v0 contains 0 if strings match, else v0 contains -1
+	beq $v0, $0, addr_found # String match
+	# strings do not match, increment pointer to symbol list and loop
+	lw $s0, 8($s0) # move the pointer for the table
+	j addr_for
+	
 addr_not_found:
 	li $v0, -1
+	j addr_exit
+addr_found:
+	lw $v0 0($s0) # load the address (0) to return
+	j addr_exit
 addr_exit:
 	lw $s0, 8($sp)
 	lw $a1, 4($sp)

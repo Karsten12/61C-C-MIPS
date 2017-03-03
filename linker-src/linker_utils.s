@@ -47,7 +47,13 @@ relocLabel: .asciiz ".relocation"
 #------------------------------------------------------------------------------
 inst_needs_relocation:
 	# YOUR CODE HERE
-
+	addiu $t0, $0, 0x2 # t0 now contains opcode for J
+	addiu $t1, $0, 0x3 # t1 now contains opcode for jal
+	sra $t2, $a0, 26 # shift 32 bit instruction 26 right to get only opcode
+	beq $t2, $t0 inst_needs_relocation_true # check if instruction is J
+	beq $t2, $t1, inst_needs_relocation_true # check if instruction is Jal
+	li $v0, 0 # return 0 if the instruction doesn't need relocation
+	jr $ra
 inst_needs_relocation_true:
 	li $v0, 1
 	jr $ra
@@ -79,9 +85,24 @@ relocate_inst:
 
 	move $a0, $a3	# $a1 is already set
 	jal symbol_for_addr				# checks relocation table
-	beq $v0, $0, relocate_inst_error
+	beq $v0, $0, relocate_inst_error # symbol for addr did not find the name
 	# YOUR CODE HERE
-
+	# v0 should be a pointer to the name
+	# addr_for_symbol needs a0 (pointer to symbol list) and a1 (the name to look for)
+	move $a1, $v0 # the name as returned by symbol_for_addr
+	lw $a0, 4($sp) # the pointer to symbol
+	jal addr_for_symbol # returns address of symbol if found or -1 if not found
+	li $t0, -1 # load up -1 to do check on return of addr_for_symbol
+	beq $v0, $t0, relocate_inst_error # if addr_for_symbol didn't find the name v0 contains -1
+	# v0 now contains address of symbol
+	sll $t1, $v0, 4  # get rid of top 4 bits which we get back from the PC
+	srl $t1, $t1, 6 # remove useless bottom 2 bits (both are 0)
+	lw $t2, 12($sp) # reload the 32 bit instruction
+	srl $v0, $t2, 26 # isolate the opcode
+	sll $v0, $v0, 26 # bottom 26 bits of the 32 bit instruction is now all 0's
+	or $v0, $v0, $t1 # Top 6 bits is opcode, bottom 26 bits is the address from t1
+	j relocate_inst_end
+	
 relocate_inst_error:
 	li $v0, -1
 relocate_inst_end:
